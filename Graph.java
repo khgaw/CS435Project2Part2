@@ -4,10 +4,11 @@ import java.util.ArrayList;
 public interface Graph {
 
     HashSet<GraphNode> allNodes = new HashSet<>();
+    void addNode(final int nodeVal);
     HashSet<GraphNode> getAllNodes();
     GraphNode get(int element);
-
 }
+
 class GraphNode
 {
     int value;
@@ -25,9 +26,10 @@ class Edge
 {
     int weight;
     GraphNode destination;
-    public Edge (GraphNode second)
+    public Edge (GraphNode second, int num)
     {
-        weight = 1;
+        weight = num;
         destination = second;
     }
 }
+

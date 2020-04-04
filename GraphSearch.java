@@ -141,7 +141,7 @@ public class GraphSearch {
         ArrayList<GraphNode> path = new ArrayList<>();
         ArrayList<Boolean> visited = new ArrayList<>();
         LinkedList<GraphNode> queue = new LinkedList<>();
-        for (int i = 0; i < graph.allNodes.size(); i++)
+        for (int i = 0; i < graph.getAllNodes().size(); i++)
             visited.add(false);
 
         graph.get(0).visited = true;

@@ -4,28 +4,35 @@ public class Main
 {
     public static void main(String[] args)
     {
-        unDirectedGraph graph = new unDirectedGraph();
-        //graph = createLinkedList(10);
+        DirectedGraph graph = new DirectedGraph();
+        graph = createRandomDAGIter(1000);
 
-        graph.addNode(0);
-        graph.addNode(1);
-        graph.addNode(2);
-        graph.addNode(3);
-        graph.addNode(4);
-        graph.addNode(5);
-        graph.addUndirectedEdge(graph.get(0), graph.get(1));
-        graph.addUndirectedEdge(graph.get(0), graph.get(2));
-        graph.addUndirectedEdge(graph.get(1), graph.get(3));
-        graph.addUndirectedEdge(graph.get(3), graph.get(5));
-        graph.addUndirectedEdge(graph.get(4), graph.get(5));
+        //graph.addNode(0);
+        //graph.addNode(1);
+        //graph.addNode(2);
+        //graph.addNode(3);
+        //graph.addNode(4);
+        //graph.addNode(5);
+        //graph.addNode(6);
+        //graph.addNode(7);
+        //graph.addDirectedEdge(graph.get(0), graph.get(1));
+        //graph.addDirectedEdge(graph.get(0), graph.get(3));
+        //graph.addDirectedEdge(graph.get(2), graph.get(3));
+        //graph.addDirectedEdge(graph.get(2), graph.get(6));
+        //graph.addDirectedEdge(graph.get(2), graph.get(7));
+        //graph.addDirectedEdge(graph.get(3), graph.get(6));
+        //graph.addDirectedEdge(graph.get(7), graph.get(5));
+        //graph.addDirectedEdge(graph.get(7), graph.get(4));
         //graph = createRandomUnweightedGraphIter(10);
-        ArrayList<GraphNode> path = GraphSearch.DFSRec(graph.get(1), graph.get(4));
+        ArrayList<GraphNode> path = TopSort.mDFS(graph);
+
         System.out.println("************");
+        //System.out.println(graph.checkCycles(graph, graph.get(0)));
         for (GraphNode x : path)
             System.out.println(x.value);
     }
 
-    static Graph createRandomUnweightedGraphIter(int n)
+    static unDirectedGraph createRandomUnweightedGraphIter(int n)
     {
         unDirectedGraph graph = new unDirectedGraph();
         for (int i = 0; i < n; i++)
@@ -56,7 +63,7 @@ public class Main
         return graph;
     }
 
-    static Graph createLinkedList(int n)
+    static unDirectedGraph createLinkedList(int n)
     {
         unDirectedGraph graph = new unDirectedGraph();
         for (int i = 0; i < n; i++)
@@ -94,4 +101,26 @@ public class Main
         Graph graph = createLinkedList(10000);
         return GraphSearch.BFTIter(graph);
     }
+
+    static DirectedGraph createRandomDAGIter(final int n)
+    {
+        DirectedGraph graph = new DirectedGraph();
+        for (int i = 0; i < n; i++)
+        {
+            graph.addNode(i);
+        }
+        // Between each two nodes, give a 50% chance of putting an edge in between
+        //HashSet<GraphNode> nodes = graph.getAllNodes();
+        for(int i = 0; i < n; i++) {
+            for (int j = i+1; j < n; j++) {
+                Random rand = new Random();
+                int add = rand.nextInt(10);
+                if (add>5 && graph.checkCycles(graph, graph.get(j))) {
+                    graph.addDirectedEdge(graph.get(i), graph.get(j));
+                }
+            }
+        }
+        return graph;
+    }
+
 }

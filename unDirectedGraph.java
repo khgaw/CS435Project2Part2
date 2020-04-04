@@ -30,9 +30,9 @@ public class unDirectedGraph implements Graph {
 
     public void addUndirectedEdge(final GraphNode first, final GraphNode second)
     {
-        Edge edge = new Edge(second);
+        Edge edge = new Edge(second, 1);
         first.neighbors.add(edge);
-        Edge edge2 = new Edge(first);
+        Edge edge2 = new Edge(first, 1);
         second.neighbors.add(edge2);
     }
 
