@@ -4,33 +4,49 @@ public class Main
 {
     public static void main(String[] args)
     {
-        WeightedGraph graph = new WeightedGraph();
+        //WeightedGraph graph = new WeightedGraph();
         //graph = createRandomCompleteWeightedGraph(10);
-
-        graph.addNode(0);
-        graph.addNode(1);
-        graph.addNode(2);
-        graph.addNode(3);
-        graph.addNode(4);
+        //graph.addNode(0);
+        //graph.addNode(1);
+        //graph.addNode(2);
+        //graph.addNode(3);
+        //graph.addNode(4);
         //graph.addNode(5);
         //graph.addNode(6);
         //graph.addNode(7);
-        graph.addWeightedEdge(graph.get(0), graph.get(1), 2);
-        graph.addWeightedEdge(graph.get(1), graph.get(2), 3);
-        graph.addWeightedEdge(graph.get(0), graph.get(2), 1);
-        graph.addWeightedEdge(graph.get(1), graph.get(3), 2);
-        graph.addWeightedEdge(graph.get(0), graph.get(3), 10);
-        graph.addWeightedEdge(graph.get(3), graph.get(4), 2);
+        //graph.addWeightedEdge(graph.get(0), graph.get(1), 2);
+        //graph.addWeightedEdge(graph.get(1), graph.get(2), 3);
+        //graph.addWeightedEdge(graph.get(0), graph.get(2), 1);
+        //graph.addWeightedEdge(graph.get(1), graph.get(3), 2);
+        //graph.addWeightedEdge(graph.get(0), graph.get(3), 10);
+        //graph.addWeightedEdge(graph.get(3), graph.get(4), 2);
         //graph.addDirectedEdge(graph.get(7), graph.get(5));
         //graph.addDirectedEdge(graph.get(7), graph.get(4));
         //graph = createRandomUnweightedGraphIter(10);
         //ArrayList<GraphNode> path = TopSort.mDFS(graph);
-        HashMap<GraphNode, Integer> vals = dijkstras(graph.get(0));
+        //HashMap<GraphNode, Integer> vals = dijkstras(graph.get(0));
 
-        System.out.println("************");
+        //System.out.println("************");
         //System.out.println(graph.checkCycles(graph, graph.get(0)));
         //vals.foreach()
             //System.out.println(x.value);
+
+        GridGraph graph = createRandomGridGraph(100);
+        //GridGraph graph = new GridGraph();
+        //graph.addGridNode(0, 0, 0);
+        //graph.addGridNode(0, 1, 1);
+        //graph.addGridNode(1, 0, 2);
+        //graph.addGridNode(1, 1, 3);
+        //graph.addGridNode(1, 1, 3);
+        //graph.addUndirectedEdge(graph.getXY(0,0), graph.getXY(0, 1), 1);
+        //graph.addUndirectedEdge(graph.getXY(0,1), graph.getXY(1, 1), 1);
+        //graph.addUndirectedEdge(graph.getXY(0,0), graph.getXY(1, 0), 1);
+        GridNode start = graph.getXY(0,0);
+        GridNode end = graph.getXY(99,99);
+        ArrayList<GridNode> path = astar(start, end);
+
+        for (GridNode x : path)
+            System.out.println(x.value);
     }
 
     // UNDIRECTED METHODS
@@ -187,7 +203,6 @@ public class Main
         values.add(start);
         parents.add(null);
         distance.add(0);
-        //start.visited = true;
         GraphNode curr = start;
         ArrayList<GraphNode> visited = new ArrayList<>();
         boolean allVisited = false;
@@ -256,5 +271,140 @@ public class Main
             finList.put(values.get(i), distance.get(i));
         }
         return finList;
+    }
+
+    // GridNode Methods
+    static GridGraph createRandomGridGraph(int n)
+    {
+        GridGraph graph = new GridGraph();
+        int val = 0;
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                graph.addGridNode(i, j, val);
+                val++;
+            }
+        }
+
+        for (GridNode node : graph.getAllNodes())
+        {
+            int x = node.x;
+            int y = node.y;
+
+            // Check down and right neighbors in grid
+            Random rand = new Random();
+            int add = rand.nextInt(2);
+            if (add==1 && x+1 < n)
+            {
+                GridNode temp = graph.getXY(x+1, y);
+                graph.addUndirectedEdge(node, temp, 1);
+            }
+
+            add = rand.nextInt(2);
+            if (add==1 && y+1 < n)
+            {
+                GridNode temp = graph.getXY(x, y+1);
+                graph.addUndirectedEdge(node, temp, 1);
+            }
+        }
+        return graph;
+    }
+
+    static ArrayList<GridNode> astar(final GridNode sourceNode, final GridNode destNode)
+    {
+        ArrayList<GridNode> path = new ArrayList<>();
+        ArrayList<GridNode> values = new ArrayList<>();
+        ArrayList<GridNode> parents = new ArrayList<>();
+        ArrayList<Integer> distance = new ArrayList<>();
+        ArrayList<GridNode> visited = new ArrayList<>();
+
+        // Add the starting node
+        values.add(sourceNode);
+        parents.add(null);
+        distance.add(0);
+        GridNode curr = sourceNode;
+        boolean allVisited = false;
+
+        while (curr != destNode && !allVisited)
+        {
+            visited.add(curr);
+            curr.visited = true;
+            for (GridEdge edge : curr.neighbors)
+            {
+                GridNode temp = edge.destination;
+                if (temp.visited)
+                    continue;
+
+                // If the node is not in values, add it
+                if (!values.contains(temp)) {
+                    values.add(temp);
+                    int dist = distance.get(values.indexOf(curr));
+                    distance.add(dist + manhattanDist(temp, destNode));
+                    parents.add(curr);
+                }
+                else // If node already in values, compare current distance to last dist
+                {
+                    int index = values.indexOf(temp);
+                    int currDist = distance.get(index) + manhattanDist(temp, destNode);
+                    int newDist = distance.get(values.indexOf(curr));
+
+                    if (currDist < newDist)
+                        continue;
+                    else
+                    {
+                        distance.set(values.indexOf(temp), newDist);
+                    }
+                }
+            }
+            // Find the next min that is not visited
+            while(true) {
+                int min = 1000000;
+                int minIndex = -1;
+                for (int i = 0; i < distance.size(); i++) {
+                    if (distance.get(i) == 0)
+                        continue;
+                    if (distance.get(i) < min && !visited.contains(values.get(i))) {
+                        min = distance.get(i);
+                        minIndex = i;
+                    }
+                }
+                if (minIndex == -1) {
+                    break;
+                }
+                curr = values.get(minIndex);
+                if (!curr.visited)
+                    break;
+            }
+            for (GridNode node : values)
+            {
+                if (!node.visited) {
+                    allVisited = false;
+                    break;
+                }
+                allVisited = true;
+            }
+        }
+        // Add everything to the HashMap
+        while (curr != sourceNode)
+        {
+            path.add(0, curr);
+            int index = values.indexOf(curr);
+            curr = parents.get(index);
+        }
+        path.add(0, sourceNode);
+        if (path.get(path.size()-1) != destNode)
+            return null;
+        return path;
+    }
+
+    static int manhattanDist(GridNode start, GridNode dest)
+    {
+        int destX = dest.x;
+        int destY = dest.y;
+        int startX = start.x;
+        int startY = start.y;
+
+        return Math.abs(destX-startX) + Math.abs(destY-startY);
     }
 }
