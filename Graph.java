@@ -1,5 +1,4 @@
 import java.util.HashSet;
-import java.util.ArrayList;
 
 public interface Graph {
 
@@ -13,10 +12,10 @@ class GraphNode
 {
     int value;
     boolean visited;
-    ArrayList<Edge> neighbors;;
+    HashSet<Edge> neighbors;
     public GraphNode (int val)
     {
-        neighbors = new ArrayList<>();
+        neighbors = new HashSet<>();
         value = val;
         visited = false;
     }

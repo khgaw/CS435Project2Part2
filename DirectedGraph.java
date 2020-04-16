@@ -1,9 +1,10 @@
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Stack;
 
 public class DirectedGraph implements Graph{
 
     private HashSet<GraphNode> allNodes;
-    //private ArrayList<ArrayList<Integer>> adjMatrix = new ArrayList<>();
 
     public DirectedGraph() {
         allNodes = new HashSet<>();
@@ -39,22 +40,47 @@ public class DirectedGraph implements Graph{
     public GraphNode get(int element)
     {
         for (GraphNode node : allNodes) {
-            if (node.value == (element))
+            if (node.value == element)
                 return node;
         }
         return null;
     }
 
     static boolean checkCycles(Graph graph, GraphNode node) {
-        // Check if anything has a destination of node
-        for (GraphNode temp : graph.getAllNodes())
+        Stack<GraphNode> stack = new Stack<>();
+        GraphNode curr = node;
+        boolean cycle = true; // true is no cycle, false is yes cycle
+
+        // Modified DFS that checks for cycles
+        do
         {
-            for (Edge edge : temp.neighbors)
+            // If already visited, continue
+            if (curr.visited)
             {
-                if (edge.destination == node)
-                    return false;
+                continue;
             }
-        }
-        return true; // No cycle
+
+            curr.visited = true;
+            int count=0;
+            // Add each edge to the stack
+            for (Edge edge : curr.neighbors)
+            {
+                if (!edge.destination.visited) {
+                    stack.push(edge.destination);
+                    count++;
+                }
+            }
+            node.visited = false;
+            if (stack.isEmpty())
+                break;
+
+            if (stack.contains(node)) {
+                cycle = false;
+                break;
+            }
+            curr = stack.pop();
+        } while (curr != node);
+
+        return cycle;
     }
 }

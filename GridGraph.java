@@ -12,26 +12,14 @@ public class GridGraph {
 
     public void addUndirectedEdge(final GridNode first, final GridNode second, final int edgeWeight)
     {
-        GridEdge edge = new GridEdge(second, 1);
-        first.neighbors.add(edge);
-        GridEdge edge2 = new GridEdge(first, 1);
-        second.neighbors.add(edge2);
+        first.neighbors.add(new GridEdge(second, 1));
+        second.neighbors.add(new GridEdge(first, 1));
     }
 
     public void removeWeightedEdge(final GridNode first, final GridNode second)
     {
-        for (GridEdge edge : first.neighbors) {
-            if (edge.destination == second) {
-                first.neighbors.remove(edge);
-                break;
-            }
-        }
-        for (GridEdge edge : second.neighbors) {
-            if (edge.destination == first) {
-                second.neighbors.remove(edge);
-                break;
-            }
-        }
+        first.neighbors.remove(getEdge(second));
+        first.neighbors.remove(getEdge(first));
     }
 
     public HashSet<GridNode> getAllNodes()
@@ -39,16 +27,17 @@ public class GridGraph {
         return allNodes;
     }
 
-    public GridNode get(int element)
+    public GridNode getEdge(GridNode first)
     {
-        for (GridNode node : allNodes) {
-            if (node.value == (element))
-                return node;
+        for (GridEdge edge : first.neighbors) {
+            if (edge.destination == first) {
+                return first;
+            }
         }
         return null;
     }
 
-    public GridNode getXY(int x, int y)
+    public GridNode getByCoordinates(int x, int y)
     {
         for (GridNode node : allNodes) {
             if (node.x == x && node.y == y)
@@ -60,16 +49,16 @@ public class GridGraph {
 
 class GridNode
 {
-    int value;
     boolean visited;
     ArrayList<GridEdge> neighbors;
-    int x, y;
-    public GridNode (int num1, int num2, int val)
+    int x, y, value;
+
+    public GridNode (int x, int y, int value)
     {
-        x = num1;
-        y=num2;
+        this.x = x;
+        this.y = y;
         neighbors = new ArrayList<>();
-        value = val;
+        this.value = value;
         visited = false;
     }
 }
@@ -78,9 +67,9 @@ class GridEdge
 {
     int weight;
     GridNode destination;
-    public GridEdge (GridNode second, int num)
+    public GridEdge (GridNode second, int weight)
     {
-        weight = num;
+        this.weight = weight;
         destination = second;
     }
 }

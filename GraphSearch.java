@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 
 public class GraphSearch {
@@ -36,9 +37,6 @@ public class GraphSearch {
             if (stack.peek() == end)
                 break;
         }
-        //if you see the end, search is complete
-        if(stack.peek() != end)
-            stack.pop();
         return stack;
     }
 
@@ -55,7 +53,6 @@ public class GraphSearch {
             // If already visited, continue
             if (curr.visited)
             {
-                //curr = stack.pop();
                 path.remove(path.size()-1);
                 continue;
             }
@@ -73,7 +70,6 @@ public class GraphSearch {
                 if (!edge.destination.visited) {
                     stack.push(edge.destination);
                     count++;
-                    continue;
                 }
             }
             // If all the neighbors have been visited, remove the curr node from the path (not in the path)
@@ -90,7 +86,7 @@ public class GraphSearch {
     static ArrayList<GraphNode> BFTRec(Graph graph)
     {
         ArrayList<GraphNode> path = new ArrayList<>();
-        LinkedList<GraphNode> queue = new LinkedList<>();
+        Queue<GraphNode> queue = new LinkedList<>();
         ArrayList<Boolean> visited = new ArrayList<>();
 
         // Keep track of how many unvisited nodes there are
@@ -102,7 +98,8 @@ public class GraphSearch {
         queue.add(graph.get(0));
         return BFTRecHelper(graph, queue, path, visited);
     }
-    static ArrayList<GraphNode> BFTRecHelper(Graph graph, LinkedList<GraphNode> queue, ArrayList<GraphNode> path, ArrayList<Boolean> visited)
+
+    static ArrayList<GraphNode> BFTRecHelper(Graph graph,Queue<GraphNode> queue, ArrayList<GraphNode> path, ArrayList<Boolean> visited)
     {
         // If all nodes have been visited and nothing left to check, finished
         if (queue.isEmpty() && visited.isEmpty())
@@ -128,7 +125,7 @@ public class GraphSearch {
                 if (!edge.destination.visited) {
                     edge.destination.visited = true;
                     visited.remove(0);
-                    queue.push(edge.destination);
+                    queue.add(edge.destination);
                 }
             }
             BFTRecHelper(graph, queue, path, visited);
@@ -140,7 +137,7 @@ public class GraphSearch {
     {
         ArrayList<GraphNode> path = new ArrayList<>();
         ArrayList<Boolean> visited = new ArrayList<>();
-        LinkedList<GraphNode> queue = new LinkedList<>();
+        Queue<GraphNode> queue = new LinkedList<>();
         for (int i = 0; i < graph.getAllNodes().size(); i++)
             visited.add(false);
 
@@ -151,32 +148,33 @@ public class GraphSearch {
 
         while (visited.size() != 0) //All nodes not visited
         {
-            // Add neighbors to the queue
+            // Add neighbors to the queue if they haven't been visited
             if (!curr.neighbors.isEmpty()) {
-                for (int i = 0; i < curr.neighbors.size(); i++) {
-                    if (curr.neighbors.get(i).destination.visited) {
+                for (Edge edge : curr.neighbors) {
+                    if (edge.destination.visited) {
                         continue;
                     }
-                    curr.neighbors.get(i).destination.visited = true;
+                    edge.destination.visited = true;
                     visited.remove(0);
-                    queue.add(curr.neighbors.get(i).destination);
-                    path.add(curr.neighbors.get(i).destination);
+                    queue.add(edge.destination);
+                    path.add(edge.destination);
                 }
             }
-            curr = queue.poll();
-            // If no more nodes to visit in graph (connected), find another set of nodes disconnected
-            if (queue.isEmpty())
+            if (queue.peek() != null) {
+                curr = queue.poll();
+                continue;
+            }
+            // If there are no more connected nodes in that part of the graph, look for another one
+            // Look for a node that hasn't been visited and add it to the queue to BFS again
+            for (int p = 0; p < graph.getAllNodes().size(); p++)
             {
-                for (int p = 0; p < graph.getAllNodes().size(); p++)
+                if (!graph.get(p).visited)
                 {
-                    if (!graph.get(p).visited)
-                    {
-                        curr = graph.get(p);
-                        path.add(graph.get(p));
-                        graph.get(p).visited = true;
-                        visited.remove(0);
-                        break;
-                    }
+                    curr = graph.get(p);
+                    path.add(graph.get(p));
+                    graph.get(p).visited = true;
+                    visited.remove(0);
+                    break;
                 }
             }
         }

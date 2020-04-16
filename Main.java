@@ -4,45 +4,10 @@ public class Main
 {
     public static void main(String[] args)
     {
-        //WeightedGraph graph = new WeightedGraph();
-        //graph = createRandomCompleteWeightedGraph(10);
-        //graph.addNode(0);
-        //graph.addNode(1);
-        //graph.addNode(2);
-        //graph.addNode(3);
-        //graph.addNode(4);
-        //graph.addNode(5);
-        //graph.addNode(6);
-        //graph.addNode(7);
-        //graph.addWeightedEdge(graph.get(0), graph.get(1), 2);
-        //graph.addWeightedEdge(graph.get(1), graph.get(2), 3);
-        //graph.addWeightedEdge(graph.get(0), graph.get(2), 1);
-        //graph.addWeightedEdge(graph.get(1), graph.get(3), 2);
-        //graph.addWeightedEdge(graph.get(0), graph.get(3), 10);
-        //graph.addWeightedEdge(graph.get(3), graph.get(4), 2);
-        //graph.addDirectedEdge(graph.get(7), graph.get(5));
-        //graph.addDirectedEdge(graph.get(7), graph.get(4));
-        //graph = createRandomUnweightedGraphIter(10);
-        //ArrayList<GraphNode> path = TopSort.mDFS(graph);
-        //HashMap<GraphNode, Integer> vals = dijkstras(graph.get(0));
-
-        //System.out.println("************");
-        //System.out.println(graph.checkCycles(graph, graph.get(0)));
-        //vals.foreach()
-            //System.out.println(x.value);
-
-        GridGraph graph = createRandomGridGraph(100);
-        //GridGraph graph = new GridGraph();
-        //graph.addGridNode(0, 0, 0);
-        //graph.addGridNode(0, 1, 1);
-        //graph.addGridNode(1, 0, 2);
-        //graph.addGridNode(1, 1, 3);
-        //graph.addGridNode(1, 1, 3);
-        //graph.addUndirectedEdge(graph.getXY(0,0), graph.getXY(0, 1), 1);
-        //graph.addUndirectedEdge(graph.getXY(0,1), graph.getXY(1, 1), 1);
-        //graph.addUndirectedEdge(graph.getXY(0,0), graph.getXY(1, 0), 1);
-        GridNode start = graph.getXY(0,0);
-        GridNode end = graph.getXY(99,99);
+        GridGraph graph = new GridGraph();
+        graph = createRandomGridGraph(100);
+        GridNode start = graph.getByCoordinates(0,0);
+        GridNode end = graph.getByCoordinates(99,99);
         ArrayList<GridNode> path = astar(start, end);
 
         for (GridNode x : path)
@@ -94,14 +59,8 @@ public class Main
         {
             GraphNode obj1 = null;
             GraphNode obj2 = null;
-            for (GraphNode node : nodes) {
-                if (node.equals(i))
-                    obj1=node;
-            }
-            for (GraphNode node : nodes) {
-                if (node.equals(i+1))
-                    obj2=node;
-            }
+            obj1 = graph.get(i);
+            obj2 = graph.get(i+1);
             graph.addUndirectedEdge(obj1, obj2);
         }
 
@@ -168,27 +127,18 @@ public class Main
     static WeightedGraph createWeightedLinkedList(int n)
     {
         WeightedGraph graph = new WeightedGraph();
+        ArrayList<GraphNode> ordered = new ArrayList<>();
         for (int i = 0; i < n; i++)
         {
             graph.addNode(i);
+            ordered.add(graph.get(i));
         }
         // Attach edge between one node and the next only
         HashSet<GraphNode> nodes = graph.getAllNodes();
         for (int i = 0; i < n-1; i++)
         {
-            GraphNode obj1 = null;
-            GraphNode obj2 = null;
-            for (GraphNode node : nodes) {
-                if (node.equals(i))
-                    obj1=node;
-            }
-            for (GraphNode node : nodes) {
-                if (node.equals(i+1))
-                    obj2=node;
-            }
-            graph.addWeightedEdge(obj1, obj2, 1);
+            graph.addWeightedEdge(ordered.get(i), ordered.get(i+1), 1);
         }
-
         return graph;
     }
 
@@ -210,20 +160,19 @@ public class Main
         while (!allVisited)
         {
             visited.add(curr);
-            curr.visited = true;
             for (Edge edge : curr.neighbors)
             {
-                GraphNode temp = edge.destination;
+                GraphNode dest = edge.destination;
                 // If the node is not in values, add it
-                if (!values.contains(temp)) {
-                    values.add(temp);
+                if (!values.contains(dest)) {
+                    values.add(dest);
                     int dist = distance.get(values.indexOf(curr));
                     distance.add(edge.weight + dist);
                     parents.add(curr);
                 }
                 else // If node already in values, compare current distance to last dist
                 {
-                    int index = values.indexOf(temp);
+                    int index = values.indexOf(dest);
                     int currDist = distance.get(index);
                     int newDist = distance.get(values.indexOf(curr)) + edge.weight;
 
@@ -231,40 +180,33 @@ public class Main
                         continue;
                     else
                     {
-                        distance.set(values.indexOf(temp), newDist);
+                        distance.set(values.indexOf(dest), newDist);
                     }
                 }
             }
             // Find the next min that is not visited
-            while(true) {
-                int min = 100;
-                int i = 0;
-                int minIndex = -1;
-                for (; i < distance.size(); i++) {
-                    if (distance.get(i) == 0)
-                        continue;
-                    if (distance.get(i) < min && !visited.contains(values.get(i))) {
-                        min = distance.get(i);
-                        minIndex = i;
-                    }
-                }
-                if (minIndex == -1) {
+            while(!allVisited) {
+                int minIndex = findMin(distance, visited, values);
+
+                if (minIndex == -1)
                     allVisited = true;
-                    break;
+                else {
+                    curr = values.get(minIndex);
+                    if (!visited.contains(curr))
+                        break;
                 }
-                curr = values.get(minIndex);
-                if (!curr.visited)
-                    break;
             }
+
             for (GraphNode node : values)
             {
-                if (!node.visited) {
+                if (!visited.contains(node)) {
                     allVisited = false;
                     break;
                 }
                 allVisited = true;
             }
         }
+
         // Add everything to the HashMap
         for (int i = 0; i < distance.size(); i++)
         {
@@ -273,18 +215,31 @@ public class Main
         return finList;
     }
 
+    static int findMin(final ArrayList<Integer> distance, final ArrayList<GraphNode> visited, final ArrayList<GraphNode> values)
+    {
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+
+        for (int i = 0; i < distance.size(); i++) {
+            if (distance.get(i) == 0)
+                continue;
+            if (distance.get(i) < min && !visited.contains(values.get(i))) {
+                min = distance.get(i);
+                minIndex = i;
+            }
+        }
+        return minIndex;
+    }
+
     // GridNode Methods
     static GridGraph createRandomGridGraph(int n)
     {
         GridGraph graph = new GridGraph();
         int val = 0;
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n*n; i++)
         {
-            for (int j = 0; j < n; j++)
-            {
-                graph.addGridNode(i, j, val);
-                val++;
-            }
+            graph.addGridNode(i%n, i/n, val);
+            val++;
         }
 
         for (GridNode node : graph.getAllNodes())
@@ -294,17 +249,18 @@ public class Main
 
             // Check down and right neighbors in grid
             Random rand = new Random();
-            int add = rand.nextInt(2);
-            if (add==1 && x+1 < n)
+            // Made it 75% chance of having an edge because 50% did not give many good graphs
+            int add = rand.nextInt(4);
+            if (add < 3 && x+1 < n)
             {
-                GridNode temp = graph.getXY(x+1, y);
+                GridNode temp = graph.getByCoordinates(x+1, y);
                 graph.addUndirectedEdge(node, temp, 1);
             }
 
-            add = rand.nextInt(2);
-            if (add==1 && y+1 < n)
+            add = rand.nextInt(4);
+            if (add < 3 && y+1 < n)
             {
-                GridNode temp = graph.getXY(x, y+1);
+                GridNode temp = graph.getByCoordinates(x, y+1);
                 graph.addUndirectedEdge(node, temp, 1);
             }
         }
@@ -328,8 +284,8 @@ public class Main
 
         while (curr != destNode && !allVisited)
         {
-            visited.add(curr);
             curr.visited = true;
+            visited.add(curr);
             for (GridEdge edge : curr.neighbors)
             {
                 GridNode temp = edge.destination;
@@ -339,7 +295,7 @@ public class Main
                 // If the node is not in values, add it
                 if (!values.contains(temp)) {
                     values.add(temp);
-                    int dist = distance.get(values.indexOf(curr));
+                    int dist = distance.get(values.indexOf(curr)) + 1;
                     distance.add(dist + manhattanDist(temp, destNode));
                     parents.add(curr);
                 }
@@ -357,25 +313,17 @@ public class Main
                     }
                 }
             }
+
             // Find the next min that is not visited
-            while(true) {
-                int min = 1000000;
-                int minIndex = -1;
-                for (int i = 0; i < distance.size(); i++) {
-                    if (distance.get(i) == 0)
-                        continue;
-                    if (distance.get(i) < min && !visited.contains(values.get(i))) {
-                        min = distance.get(i);
-                        minIndex = i;
-                    }
-                }
+            do{
+                int minIndex = findMinAStar(distance, values);
+
                 if (minIndex == -1) {
                     break;
                 }
                 curr = values.get(minIndex);
-                if (!curr.visited)
-                    break;
-            }
+            } while(curr.visited);
+
             for (GridNode node : values)
             {
                 if (!node.visited) {
@@ -392,19 +340,31 @@ public class Main
             int index = values.indexOf(curr);
             curr = parents.get(index);
         }
+
         path.add(0, sourceNode);
         if (path.get(path.size()-1) != destNode)
             return null;
         return path;
     }
 
+    static int findMinAStar(final ArrayList<Integer> distance, final ArrayList<GridNode> values)
+    {
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+
+        for (int i = 0; i < distance.size(); i++) {
+            if (distance.get(i) == 0)
+                continue;
+            if (distance.get(i) < min && !values.get(i).visited) {
+                min = distance.get(i);
+                minIndex = i;
+            }
+        }
+        return minIndex;
+    }
+
     static int manhattanDist(GridNode start, GridNode dest)
     {
-        int destX = dest.x;
-        int destY = dest.y;
-        int startX = start.x;
-        int startY = start.y;
-
-        return Math.abs(destX-startX) + Math.abs(destY-startY);
+        return Math.abs(dest.x-start.x) + Math.abs(dest.y-start.y);
     }
 }

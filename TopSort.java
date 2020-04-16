@@ -3,21 +3,13 @@ import java.util.LinkedList;
 import java.util.Stack;
 
 public class TopSort {
-    static ArrayList<GraphNode> Kahns(final DirectedGraph graph)
+    static ArrayList<GraphNode> allNodes = new ArrayList<>();
+    static ArrayList<Integer> getInDegrees(DirectedGraph graph)
     {
-
         ArrayList<Integer> degrees = new ArrayList<>();
-        ArrayList<GraphNode> path = new ArrayList<>();
-        LinkedList<GraphNode> queue = new LinkedList<>();
-        ArrayList<GraphNode> allNodes = new ArrayList<>();
-
-        for (GraphNode node : graph.getAllNodes())
-        {
+        for (int i = 0; i < allNodes.size(); i++)
             degrees.add(0);
-            allNodes.add(null);
-        }
-        // Find degree of each node
-        for (GraphNode node : graph.getAllNodes())
+        for (GraphNode node : allNodes)
         {
             for (Edge edge : node.neighbors) {
                 GraphNode dest = edge.destination;
@@ -25,6 +17,21 @@ public class TopSort {
             }
             allNodes.set(node.value, node);
         }
+        return degrees;
+    }
+
+    static ArrayList<GraphNode> Kahns(final DirectedGraph graph)
+    {
+        ArrayList<GraphNode> path = new ArrayList<>();
+        LinkedList<GraphNode> queue = new LinkedList<>();
+
+
+        for (GraphNode node : graph.getAllNodes())
+        {
+            allNodes.add(null);
+        }
+        // Find degree of each node
+        ArrayList<Integer> degrees = getInDegrees(graph);
 
         Boolean allVisited = false;
         while (!allVisited) {
@@ -69,9 +76,7 @@ public class TopSort {
         Stack<GraphNode> stack = new Stack<>();
         Stack<GraphNode> fullStack = new Stack<>();
 
-        //graph.get(0).visited = true;
         GraphNode curr = graph.get(0);
-        //stack.add(curr);
 
         while (fullStack.size() != graph.getAllNodes().size())
         {
